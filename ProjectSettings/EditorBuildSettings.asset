@@ -6,9 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/MainMenu.unity
-    guid: 8c3f4a2b1e9d7c5f6a8b2e4c7f9d1a3b
-  - enabled: 1
     path: Assets/Scenes/MainScence.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
@@ -17,6 +14,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Player.unity
     guid: e314dec26003dfd459e45466b5ee4df0
+  - enabled: 0
+    path: Assets/Scenes/Zombie.unity
+    guid: c77d833e40e050c40b187c5e10561b04
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

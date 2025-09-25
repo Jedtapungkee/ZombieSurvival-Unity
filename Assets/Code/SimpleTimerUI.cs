@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class SimpleTimerUI : MonoBehaviour
 {
@@ -15,6 +16,11 @@ public class SimpleTimerUI : MonoBehaviour
     public bool showMinutesAndSeconds = true; // แสดงทั้งนาทีและวินาที
     public int fontSize = 24;
     public FontStyle fontStyle = FontStyle.Bold;
+    public bool lockTopRightLayout = true; // ถ้าไม่อยากให้สคริปต์ไปยุ่งกับตำแหน่ง ให้ปิดตัวนี้
+    [Range(0f, 20f)] public float topRightMargin = 5f; // ระยะห่างจากขอบเมื่อปักมุมขวาบน
+
+    [Header("Safety / UX")]
+    [Range(0f,1f)] public float minBlinkAlpha = 0.35f; // กันข้อความโปร่งจนมองไม่เห็น
     
     // Private variables
     private SimpleDayNight dayNightSystem;
@@ -40,17 +46,20 @@ public class SimpleTimerUI : MonoBehaviour
         timerText.fontStyle = fontStyle;
         timerText.color = normalColor;
         
-        // ตั้งค่าตำแหน่งมุมขวาบน
-        RectTransform rectTransform = timerText.GetComponent<RectTransform>();
-        if (rectTransform != null)
+        if (lockTopRightLayout)
         {
-            // ตั้งค่า Anchor เป็นมุมขวาบน
-            rectTransform.anchorMin = new Vector2(1, 1);
-            rectTransform.anchorMax = new Vector2(1, 1);
-            rectTransform.pivot = new Vector2(1, 1);
+            // ตั้งค่าตำแหน่งมุมขวาบน
+            RectTransform rectTransform = timerText.GetComponent<RectTransform>();
+            if (rectTransform != null)
+            {
+                // ตั้งค่า Anchor เป็นมุมขวาบน
+                rectTransform.anchorMin = new Vector2(1, 1);
+                rectTransform.anchorMax = new Vector2(1, 1);
+                rectTransform.pivot = new Vector2(1, 1);
 
-            // ตั้งตำแหน่งให้ชิดมุมมากขึ้น (ห่างจากขอบ 5 pixels)
-            rectTransform.anchoredPosition = new Vector2(-5, -5);
+                // ตั้งตำแหน่งให้ชิดมุมมากขึ้น (ห่างจากขอบ topRightMargin pixels)
+                rectTransform.anchoredPosition = new Vector2(-topRightMargin, -topRightMargin);
+            }
         }
         
         Debug.Log("✅ SimpleTimerUI เตรียมพร้อมแล้ว");
@@ -94,6 +103,12 @@ public class SimpleTimerUI : MonoBehaviour
             // แสดงทั้งนาทีและวินาที
             int minutes = Mathf.FloorToInt(remainingMinutes);
             int seconds = Mathf.FloorToInt((remainingMinutes - minutes) * 60f);
+            // กันเคสปัดเศษจนได้ 60 วินาที
+            if (seconds >= 60)
+            {
+                minutes += 1;
+                seconds = 0;
+            }
             
             if (minutes > 0)
             {
@@ -134,15 +149,17 @@ public class SimpleTimerUI : MonoBehaviour
             if (remainingMinutes <= 0.5f)
             {
                 float blinkSpeed = 4f;
-                float alpha = 0.5f + 0.5f * Mathf.Sin(Time.time * blinkSpeed);
-                currentColor.a = alpha;
+                // ใช้ unscaledTime เพื่อไม่หยุดกระพริบเมื่อ Time.timeScale = 0 (เช่นหน้า Game Over)
+                float alpha = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * blinkSpeed);
+                currentColor.a = Mathf.Clamp(alpha, minBlinkAlpha, 1f);
                 timerText.color = currentColor;
             }
         }
         else
         {
             // เวลายังเหลือเยอะ ใช้สีปกติ
-            timerText.color = normalColor;
+            Color c = normalColor; c.a = 1f; // ให้แน่ใจว่าไม่โปร่งใส
+            timerText.color = c;
         }
     }
     
@@ -180,5 +197,23 @@ public class SimpleTimerUI : MonoBehaviour
     {
         if (dayNightSystem == null) return 0f;
         return dayNightSystem.GetRemainingMinutes();
+    }
+
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (dayNightSystem == null)
+        {
+            FindDayNightSystem();
+        }
     }
 }
