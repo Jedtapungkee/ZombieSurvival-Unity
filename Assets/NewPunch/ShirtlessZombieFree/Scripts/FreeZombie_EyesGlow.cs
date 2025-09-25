@@ -21,22 +21,27 @@ public class FreeZombie_EyesGlow : MonoBehaviour
 
     void OnValidate()
     {
+        // ตรวจสอบว่า BodyMaterials มีค่าและไม่เป็น null
+        if (BodyMaterials == null || BodyMaterials.Length == 0 || BodyMaterials[0] == null)
+            return;
+
         if (eyesGlow == 0)
         {
-
-
-
-            BodyMaterials[0].DisableKeyword("_EMISSION");
-            BodyMaterials[0].SetFloat("_EmissiveExposureWeight", 1);
+            // ปิดการเรืองแสง - รองรับทั้ง Built-in และ URP
+            if (BodyMaterials[0].HasProperty("_EMISSION"))
+                BodyMaterials[0].DisableKeyword("_EMISSION");
+            
+            if (BodyMaterials[0].HasProperty("_EmissiveExposureWeight"))
+                BodyMaterials[0].SetFloat("_EmissiveExposureWeight", 1);
         }
         else
         {
-
-
-            BodyMaterials[0].EnableKeyword("_EMISSION");
-            BodyMaterials[0].SetFloat("_EmissiveExposureWeight", 0);
-
+            // เปิดการเรืองแสง - รองรับทั้ง Built-in และ URP
+            if (BodyMaterials[0].HasProperty("_EMISSION"))
+                BodyMaterials[0].EnableKeyword("_EMISSION");
+            
+            if (BodyMaterials[0].HasProperty("_EmissiveExposureWeight"))
+                BodyMaterials[0].SetFloat("_EmissiveExposureWeight", 0);
         }
-
     }
 }
