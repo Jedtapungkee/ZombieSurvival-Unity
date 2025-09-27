@@ -31,11 +31,19 @@ public class ZombieAI : MonoBehaviour
     private bool isAttackingNow;
     private bool hasWalkBool, hasRunBool, hasAttackBool;
     private Health targetHealth;
+    private Health selfHealth;
+    [Header("Death Handling")]
+    [Tooltip("Animator bool parameter to set when dying.")]
+    public string deathBoolParam = "isDead";
+    [Tooltip("Seconds to keep corpse before destroy. If 0, try to use Death state's length.")]
+    public float deathCleanupDelay = 2.5f;
+    private bool isDead;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
+        selfHealth = GetComponent<Health>();
 
         if (agent == null)
         {
@@ -66,6 +74,12 @@ public class ZombieAI : MonoBehaviour
                 Debug.LogWarning($"[ZombieAI] Animator missing Bool '{attackBoolParam}'. If your parameter is named differently (e.g. 'isAttackin'), change it in the ZombieAI inspector.", this);
         }
 
+        // Subscribe to own death
+        if (selfHealth != null)
+        {
+            selfHealth.Died += OnSelfDied;
+        }
+
         // หา Player อัตโนมัติ โดยใช้ Tag
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
@@ -77,7 +91,7 @@ public class ZombieAI : MonoBehaviour
 
     void Update()
     {
-        if (target == null || agent == null || anim == null) return;
+    if (isDead || target == null || agent == null || anim == null) return;
 
         float distance = Vector3.Distance(transform.position, target.position);
 
@@ -115,6 +129,7 @@ public class ZombieAI : MonoBehaviour
 
     private IEnumerator AttackRoutine()
     {
+        if (isDead) yield break;
         isAttackingNow = true;
         lastAttackTime = Time.time;
         agent.isStopped = true; // หยุดชั่วคราวเพื่อเล่นแอนิเมชันโจมตี
@@ -128,7 +143,7 @@ public class ZombieAI : MonoBehaviour
 
         // จังหวะโดนจริง
         yield return new WaitForSeconds(attackHitDelay);
-        if (targetHealth != null && !targetHealth.IsDead)
+        if (!isDead && targetHealth != null && !targetHealth.IsDead)
         {
             targetHealth.TakeDamage(Mathf.Max(1, attackDamage));
         }
@@ -137,7 +152,40 @@ public class ZombieAI : MonoBehaviour
         yield return new WaitForSeconds(Mathf.Max(0f, attackAnimDuration - attackHitDelay));
 
         if (hasAttackBool) anim.SetBool(attackBoolParam, false);
-        agent.isStopped = false;
+        if (!isDead) agent.isStopped = false;
         isAttackingNow = false;
+    }
+
+    private void OnSelfDied()
+    {
+        if (isDead) return;
+        isDead = true;
+        // Stop AI movement and attacks
+        if (agent != null) { agent.isStopped = true; agent.ResetPath(); }
+        isAttackingNow = false;
+        // Disable all colliders to avoid further hits
+        foreach (var col in GetComponentsInChildren<Collider>()) col.enabled = false;
+        // Play death animation
+        if (anim != null)
+        {
+            // Turn off locomotion bools
+            if (hasWalkBool) anim.SetBool(walkBoolParam, false);
+            if (hasRunBool) anim.SetBool(runBoolParam, false);
+            if (hasAttackBool) anim.SetBool(attackBoolParam, false);
+            if (!string.IsNullOrEmpty(deathBoolParam)) anim.SetBool(deathBoolParam, true);
+        }
+        // Destroy after delay (use provided delay; user can match it to clip length)
+        float delay = Mathf.Max(0f, deathCleanupDelay);
+        if (delay <= 0.01f)
+        {
+            // Fallback conservative delay
+            delay = 2.5f;
+        }
+        Destroy(gameObject, delay);
+    }
+
+    private void OnDestroy()
+    {
+        if (selfHealth != null) selfHealth.Died -= OnSelfDied;
     }
 }

@@ -1721,7 +1721,7 @@ MonoBehaviour:
   dawnLightColor: {r: 1, g: 0.8, b: 0.6, a: 1}
   dawnLightIntensity: 1.2
   dawnAmbientColor: {r: 0.3, g: 0.3, b: 0.4, a: 1}
-  showDebugInfo: 1
+  showDebugInfo: 0
 --- !u!1 &2073988542
 GameObject:
   m_ObjectHideFlags: 0
