@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mapSceneName: Environment
-  setEnvironmentActiveForLighting: 1
+  setEnvironmentActiveForLighting: 0
   playerPrefab: {fileID: 5492898222834621915, guid: 94829cd56c6d13549800701ab66e97f5, type: 3}
   spawnPointName: PlayerSpawnPoint
   optionalSpawnTag: PlayerSpawn
@@ -1859,7 +1859,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sunLight: {fileID: 1459998668}
-  totalGameTimeMinutes: 10
+  totalGameTimeMinutes: 1
   dawnStartPercent: 0.8
   nightLightColor: {r: 0.1, g: 0.1, b: 0.3, a: 1}
   nightLightIntensity: 0.1
