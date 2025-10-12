@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mapSceneName: Environment
-  setEnvironmentActiveForLighting: 1
+  setEnvironmentActiveForLighting: 0
   playerPrefab: {fileID: 5492898222834621915, guid: 94829cd56c6d13549800701ab66e97f5, type: 3}
   spawnPointName: PlayerSpawnPoint
   optionalSpawnTag: PlayerSpawn

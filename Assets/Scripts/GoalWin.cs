@@ -3,22 +3,33 @@ using UnityEngine.SceneManagement;
 
 public class GoalWin : MonoBehaviour
 {
-    [SerializeField] string winSceneName = "03_WinScene";
-    [SerializeField] string playerTag = "Player";
+    [Header("Config")]
+    public string winSceneName = "03_WinScenes";
+    public string playerTag = "Player";
+
+    private void Reset()
+    {
+        // ตั้งค่าเริ่มต้นให้แน่ใจว่าคอลไลเดอร์เป็น Trigger
+        var col = GetComponent<Collider>();
+        if (col) col.isTrigger = true;
+
+        var rb = GetComponent<Rigidbody>();
+        if (rb) { rb.useGravity = false; rb.isKinematic = true; }
+    }
 
     private void OnTriggerEnter(Collider other)
     {
-        // หา GameObject เจ้าของจริงของคอลลไลเดอร์ (ถ้ามี Rigidbody จะอ้างเจ้าของนั้นก่อน)
-        GameObject root = other.attachedRigidbody ? other.attachedRigidbody.gameObject
-                                                  : other.transform.root.gameObject;
+        Debug.Log($"[GoalWin] Trigger with: {other.name} (tag={other.tag})");
 
-        if (root.CompareTag(playerTag))
+        bool isPlayer =
+            other.CompareTag(playerTag) ||                                  // ตัวที่ชนมี Tag = Player
+            (other.attachedRigidbody && other.attachedRigidbody.CompareTag(playerTag)) || // หรือ Rigidbody ที่ติดมากับตัวที่ชนมี Tag = Player
+            (other.GetComponentInParent<Transform>()?.CompareTag(playerTag) ?? false);    // หรือพาเรนต์มี Tag = Player
+
+        if (isPlayer)
         {
-            // ป้องกันกรณีมี pause หรือ timeScale ถูกแก้
-            Time.timeScale = 1f;
-
-            // โหลดซีนฉากชนะ
-            SceneManager.LoadScene(winSceneName);
+            Debug.Log($"[GoalWin] WIN! Loading scene: {winSceneName}");
+            SceneManager.LoadScene(winSceneName, LoadSceneMode.Single);
         }
     }
 }

@@ -8,15 +8,17 @@ public class WinMenu : MonoBehaviour
 
     public void OnBackToMenu()
     {
-        SceneManager.LoadScene(mainMenuScene);
+        Debug.Log($"[WinMenu] Back clicked -> Load {mainMenuScene}");
+        SceneManager.LoadScene(mainMenuScene, LoadSceneMode.Single);
     }
 
     public void OnQuit()
     {
-#if UNITY_EDITOR
+        Debug.Log("[WinMenu] Quit clicked");
+    #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
-#else
+    #else
         Application.Quit();
-#endif
+    #endif
     }
 }
