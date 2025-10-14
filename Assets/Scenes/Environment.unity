@@ -70002,6 +70002,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   winSceneName: 03_WinScenes
+  winScene: {fileID: 102900000, guid: 6d4aae6386c53854eb2bb564e064f2ba, type: 3}
   playerTag: Player
 --- !u!65 &1939067556
 BoxCollider:

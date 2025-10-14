@@ -160,6 +160,17 @@ public class ZombieAI : MonoBehaviour
     {
         if (isDead) return;
         isDead = true;
+        
+        // เพิ่มคะแนนเมื่อซอมบี้ตาย
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.AddZombieKillScore();
+        }
+        else
+        {
+            Debug.LogWarning("[ZombieAI] ScoreManager not found! No points awarded.", this);
+        }
+        
         // Stop AI movement and attacks
         if (agent != null) { agent.isStopped = true; agent.ResetPath(); }
         isAttackingNow = false;
