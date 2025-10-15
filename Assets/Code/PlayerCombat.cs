@@ -19,6 +19,10 @@ public class PlayerCombat : MonoBehaviour
     public float shootIkHoldTime = 0.15f;
     private float shootIkUntil;
     public float ShootIkWeight => shootIkHoldTime <= 0 ? 0f : Mathf.Clamp01((shootIkUntil - Time.time) / shootIkHoldTime);
+    
+    // Property สำหรับตรวจสอบว่ากำลังยิงอยู่หรือไม่
+    private bool isShooting = false;
+    public bool IsShooting => isShooting;
 
     void Awake()
     {
@@ -106,6 +110,9 @@ public class PlayerCombat : MonoBehaviour
 #else
         fire = Input.GetKey(fireKey);
 #endif
+        // อัพเดทสถานะการยิง
+        isShooting = fire && (currentWeapon is GunWeapon);
+        
         if (fire)
         {
             if (currentWeapon.TryAttack(transform))
@@ -118,11 +125,19 @@ public class PlayerCombat : MonoBehaviour
                     }
                     else if (currentWeapon is GunWeapon)
                     {
-                        if (!string.IsNullOrEmpty(shootTrigger)) animator.SetTrigger(shootTrigger);
+                        if (!string.IsNullOrEmpty(shootTrigger)) animator.SetBool(shootTrigger, true);
                         // Keep a short IK lock window to stabilize hands while the shoot pose plays
                         shootIkUntil = Time.time + shootIkHoldTime;
                     }
                 }
+            }
+        }
+        else
+        {
+            // ปล่อยปุ่มยิงแล้ว -> หยุด Animation Shoot
+            if (animator != null && !string.IsNullOrEmpty(shootTrigger))
+            {
+                animator.SetBool(shootTrigger, false);
             }
         }
     }

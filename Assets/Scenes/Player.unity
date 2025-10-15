@@ -872,7 +872,7 @@ PrefabInstance:
       addedObject: {fileID: 693760936}
     - targetCorrespondingSourceObject: {fileID: 4416926081852918481, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 693760939}
+      addedObject: {fileID: 693760945}
   m_SourcePrefab: {fileID: 100100000, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
 --- !u!4 &693760933 stripped
 Transform:
@@ -920,7 +920,7 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 6982812146204527121, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
   m_PrefabInstance: {fileID: 693760932}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &693760939
+--- !u!114 &693760945
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -936,15 +936,18 @@ MonoBehaviour:
   combat: {fileID: 693760937}
   leftHandIKName: LeftHandIK
   rightHandIKName: RightHandIK
-  leftPosWeight: 1
-  leftRotWeight: 1
+  onlyUseLeftHandIKWhenShooting: 1
+  leftPosWeight: 0.5
+  leftRotWeight: 0.5
+  leftHandIKTransitionSpeed: 10
+  leftHandIdleWeight: 0
   useRightHandIK: 0
   rightPosWeight: 1
   rightRotWeight: 1
   stabilizeRightHandOnShoot: 1
   shootRightPosWeight: 1
   shootRightRotWeight: 1
-  leftHandShootRoll: -10
+  leftHandShootRoll: 0
 --- !u!1 &1670625608
 GameObject:
   m_ObjectHideFlags: 0

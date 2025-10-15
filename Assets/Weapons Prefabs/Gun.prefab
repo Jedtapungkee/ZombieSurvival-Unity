@@ -173,37 +173,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &6047934236367289188
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2238836807905783746}
-  m_Layer: 0
-  m_Name: LeftHandIK
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2238836807905783746
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6047934236367289188}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.08, y: 0.11, z: -0.6}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 6664021520590705806}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6282676440134471220
 GameObject:
   m_ObjectHideFlags: 0
@@ -241,7 +210,7 @@ Transform:
   - {fileID: 6546174243417734876}
   - {fileID: 6205193422132607165}
   - {fileID: 2252932285713914853}
-  - {fileID: 2238836807905783746}
+  - {fileID: 1784669473663140496}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7769984613271804715
@@ -310,7 +279,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   displayName: Rifle
-  attackCooldown: 0.1
+  attackCooldown: 0
   gripLocalPosition: {x: 0, y: 0, z: 0}
   gripLocalEuler: {x: 90, y: 0, z: 90}
   debugLogHits: 1
@@ -326,6 +295,37 @@ MonoBehaviour:
   alignFromMuzzleToAimPoint: 1
   playMuzzleParticle: 1
   debugDrawRay: 1
+--- !u!1 &6499690685333981798
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1784669473663140496}
+  m_Layer: 0
+  m_Name: LeftHandIK
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1784669473663140496
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6499690685333981798}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.27156824, y: 0.7014725, z: 0.613504, w: -0.24041605}
+  m_LocalPosition: {x: -0.079, y: 0.036, z: -0.556}
+  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6664021520590705806}
+  m_LocalEulerAnglesHint: {x: 262.43298, y: 1.772995, z: -139.226}
 --- !u!1 &7209024634250591539
 GameObject:
   m_ObjectHideFlags: 0

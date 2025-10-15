@@ -13,13 +13,22 @@ public class WeaponIK : MonoBehaviour
     public string leftHandIKName = "LeftHandIK";   // empty child placed on foregrip
     public string rightHandIKName = "RightHandIK"; // optional
 
-    [Header("Weights")] 
-    [Range(0f,1f)] public float leftPosWeight = 1f;
-    [Range(0f,1f)] public float leftRotWeight = 1f;
+    [Header("Left Hand IK Settings")] 
+    [Tooltip("ให้มือซ้ายจับปืนเฉพาะตอนยิงเท่านั้น")]
+    public bool onlyUseLeftHandIKWhenShooting = true;
+    [Range(0f,1f)] public float leftPosWeight = 0.9f;
+    [Range(0f,1f)] public float leftRotWeight = 0.7f;
+    [Tooltip("ความเร็วในการเปลี่ยน IK Weight (ยิ่งสูงยิ่งเร็ว)")]
+    public float leftHandIKTransitionSpeed = 12f;
+    [Tooltip("ลด Weight เมื่อไม่ยิง (0-1, 0=ปิด IK สนิท, 0.3=เหลือ IK เล็กน้อย)")]
+    [Range(0f,1f)] public float leftHandIdleWeight = 0.2f;
+    
+    [Header("Right Hand IK Settings")] 
     [Tooltip("Use IK for right hand too (usually not needed if weapon is parented to socket)")] 
     public bool useRightHandIK;
     [Range(0f,1f)] public float rightPosWeight = 1f;
     [Range(0f,1f)] public float rightRotWeight = 1f;
+    
     [Header("Shoot Stabilization")]
     [Tooltip("Keep right hand tightly on weapon for a short time after shooting to avoid the gun raising too high.")]
     public bool stabilizeRightHandOnShoot = true;
@@ -31,6 +40,7 @@ public class WeaponIK : MonoBehaviour
     private Transform currentWeaponRoot;
     private Transform leftTarget;
     private Transform rightTarget;
+    private float currentLeftHandIKWeight = 0f; // น้ำหนัก IK ปัจจุบันของมือซ้าย
 
     void Awake()
     {
@@ -72,11 +82,31 @@ public class WeaponIK : MonoBehaviour
             UpdateTargets();
         }
 
-        // Left hand IK
+        // คำนวณว่าควรใช้ IK มือซ้ายหรือไม่
+        float targetLeftIKWeight = 0f;
         if (leftTarget != null)
         {
-            animator.SetIKPositionWeight(AvatarIKGoal.LeftHand, leftPosWeight);
-            animator.SetIKRotationWeight(AvatarIKGoal.LeftHand, leftRotWeight);
+            if (onlyUseLeftHandIKWhenShooting)
+            {
+                // ใช้ IK เฉพาะตอนยิง (ตรวจสอบว่ากำลังกดปุ่มยิงอยู่)
+                bool isShooting = combat != null && combat.IsShooting;
+                targetLeftIKWeight = isShooting ? 1f : leftHandIdleWeight;
+            }
+            else
+            {
+                // ใช้ IK ตลอดเวลา
+                targetLeftIKWeight = 1f;
+            }
+        }
+
+        // ค่อยๆ เปลี่ยน IK Weight แบบ smooth
+        currentLeftHandIKWeight = Mathf.Lerp(currentLeftHandIKWeight, targetLeftIKWeight, Time.deltaTime * leftHandIKTransitionSpeed);
+
+        // Left hand IK
+        if (leftTarget != null && currentLeftHandIKWeight > 0.01f)
+        {
+            animator.SetIKPositionWeight(AvatarIKGoal.LeftHand, leftPosWeight * currentLeftHandIKWeight);
+            animator.SetIKRotationWeight(AvatarIKGoal.LeftHand, leftRotWeight * currentLeftHandIKWeight);
             Vector3 lpos = leftTarget.position;
             Quaternion lrot = leftTarget.rotation;
             // slight roll tweak when shooting
