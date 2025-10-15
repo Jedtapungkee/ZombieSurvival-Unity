@@ -283,15 +283,15 @@ MonoBehaviour:
   gripLocalPosition: {x: 0, y: 0, z: 0}
   gripLocalEuler: {x: 90, y: 0, z: 90}
   debugLogHits: 1
-  damage: 20
-  range: 50
+  damage: 15
+  range: 100
   hitMask:
     serializedVersion: 2
     m_Bits: 256
-  ammoInClip: 100
+  ammoInClip: 60
   clipSize: 30
-  reloadTime: 1.2
-  useCameraAim: 1
+  reloadTime: 1
+  useCameraAim: 0
   alignFromMuzzleToAimPoint: 1
   playMuzzleParticle: 1
   debugDrawRay: 1

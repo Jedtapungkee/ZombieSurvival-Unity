@@ -3039,9 +3039,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 454b6109e2666024288921b5b0e9ee94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detectionRange: 20
-  attackRange: 2
-  runStartDistance: 6
+  detectionRange: 50
+  attackRange: 1
+  runStartDistance: 10
   walkSpeed: 1.6
   runSpeed: 3.2
   attackCooldown: 2
@@ -3052,7 +3052,6 @@ MonoBehaviour:
   runBoolParam: isRunning
   attackBoolParam: isAttacking
   deathBoolParam: isDead
-  deathTriggerParam: 
   deathCleanupDelay: 2
 --- !u!114 &1149283968583499897
 MonoBehaviour:
@@ -3068,6 +3067,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   destroyOnDeath: 0
+  debugLog: 0
 --- !u!114 &-922160431740200957
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3083,6 +3083,12 @@ MonoBehaviour:
   worldSpaceCanvasPrefab: {fileID: 0}
   offset: {x: 0, y: 2, z: 0}
   showSeconds: 1.2
+  fallbackFont: {fileID: 0}
+  worldScale: 0.05
+  dynamicPixelsPerUnit: 100
+  labelSize: {x: 140, y: 32}
+  fontSize: 30
+  textColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &6167427232360293298
 GameObject:
   m_ObjectHideFlags: 0

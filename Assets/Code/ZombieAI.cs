@@ -2,49 +2,60 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
+/// <summary>
+/// AI ของซอมบี้ - จัดการการเดิน, วิ่ง, โจมตี และตาย
+/// ใช้ NavMeshAgent สำหรับการเคลื่อนที่ และ Animator สำหรับ Animation
+/// </summary>
 public class ZombieAI : MonoBehaviour
 {
     [Header("Ranges")]
-    public float detectionRange = 12f;   // ระยะที่เริ่มไล่ตาม
-    public float attackRange = 2f;       // ระยะโจมตี
-    public float runStartDistance = 6f;  // ถ้าเข้าใกล้กว่าค่านี้ (มากกว่า attackRange) ให้ "วิ่ง"; ถ้าไกลกว่านี้ให้ "เดิน"
+    public float detectionRange = 12f;   // ระยะที่เริ่มตรวจจับและไล่ตามผู้เล่น (เมตร)
+    public float attackRange = 2f;       // ระยะโจมตีผู้เล่น (เมตร)
+    public float runStartDistance = 6f;  // ถ้าอยู่ใกล้กว่าค่านี้จะวิ่ง, ไกลกว่านี้จะเดิน
 
     [Header("Speeds")]
-    public float walkSpeed = 1.6f;
-    public float runSpeed = 3.2f;
+    public float walkSpeed = 1.6f;       // ความเร็วเดิน (m/s)
+    public float runSpeed = 3.2f;        // ความเร็ววิ่ง (m/s)
 
     [Header("Attack")]
-    public float attackCooldown = 1.5f;  // เวลาหน่วงระหว่างโจมตี
-    public float attackAnimDuration = 0.8f; // เวลาที่ถือว่าอยู่ในแอนิเมชันโจมตี (สำหรับ Bool)
-    public int attackDamage = 5;          // ความเสียหายต่อการโจมตีหนึ่งครั้ง
-    public float attackHitDelay = 0.3f;   // หน่วงเวลาจังหวะโดน (ซิงค์กับจังหวะมือโดนในแอนิเมชัน)
+    public float attackCooldown = 1.5f;      // ช่วงเวลาระหว่างการโจมตีแต่ละครั้ง (วินาที)
+    public float attackAnimDuration = 0.8f;  // ระยะเวลา Animation โจมตี (วินาที)
+    public int attackDamage = 5;             // ความเสียหายต่อการโจมตีหนึ่งครั้ง
+    public float attackHitDelay = 0.3f;      // หน่วงเวลาก่อนสร้างความเสียหาย (ซิงค์กับ Animation)
 
     [Header("Animator Parameters (Bool)")]
-    public string walkBoolParam = "isWalking";
-    public string runBoolParam = "isRunning";
-    public string attackBoolParam = "isAttacking"; // ถ้า Animator ของคุณสะกดเป็น "isAttackin" ให้แก้ชื่อใน Inspector
+    public string walkBoolParam = "isWalking";      // ชื่อ Bool Parameter ใน Animator สำหรับเดิน
+    public string runBoolParam = "isRunning";       // ชื่อ Bool Parameter ใน Animator สำหรับวิ่ง
+    public string attackBoolParam = "isAttacking";  // ชื่อ Bool Parameter ใน Animator สำหรับโจมตี
 
-    private Transform target;
-    private NavMeshAgent agent;
-    private Animator anim;
-    private float lastAttackTime;
-    private bool isAttackingNow;
-    private bool hasWalkBool, hasRunBool, hasAttackBool;
-    private Health targetHealth;
-    private Health selfHealth;
+    // Variables ภายใน
+    private Transform target;            // เป้าหมาย (ผู้เล่น)
+    private NavMeshAgent agent;          // Component สำหรับการเคลื่อนที่
+    private Animator anim;               // Component สำหรับ Animation
+    private float lastAttackTime;        // เวลาที่โจมตีครั้งล่าสุด
+    private bool isAttackingNow;         // กำลังอยู่ในขั้นตอนโจมตีหรือไม่
+    private bool hasWalkBool, hasRunBool, hasAttackBool;  // ตรวจสอบว่ามี Parameter ใน Animator หรือไม่
+    private Health targetHealth;         // Health Component ของเป้าหมาย
+    private Health selfHealth;           // Health Component ของตัวเอง
+    
     [Header("Death Handling")]
     [Tooltip("Animator bool parameter to set when dying.")]
-    public string deathBoolParam = "isDead";
+    public string deathBoolParam = "isDead";        // ชื่อ Bool Parameter สำหรับตาย
     [Tooltip("Seconds to keep corpse before destroy. If 0, try to use Death state's length.")]
-    public float deathCleanupDelay = 2.5f;
-    private bool isDead;
+    public float deathCleanupDelay = 2.5f;          // เวลาก่อนลบซากออกจากเกม (วินาที)
+    private bool isDead;                            // สถานะตายแล้วหรือยัง
 
+    /// <summary>
+    /// เรียกตอนเริ่มต้น - หา Components, ตรวจสอบ Animator Parameters, และหาผู้เล่น
+    /// </summary>
     void Start()
     {
+        // หา Components ที่จำเป็น
         agent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
         selfHealth = GetComponent<Health>();
 
+        // ตรวจสอบว่ามี Components ครบหรือไม่
         if (agent == null)
         {
             Debug.LogError("[ZombieAI] Missing NavMeshAgent.", this);
@@ -54,7 +65,7 @@ public class ZombieAI : MonoBehaviour
             Debug.LogError("[ZombieAI] Missing Animator.", this);
         }
 
-        // ตรวจสอบว่ามีพารามิเตอร์ Bool ตามที่กำหนดหรือไม่ เพื่อช่วยจับเคสชื่อไม่ตรง
+        // ตรวจสอบว่า Animator มี Parameters ที่ต้องการหรือไม่ (ป้องกัน typo)
         if (anim != null)
         {
             foreach (var p in anim.parameters)
@@ -66,21 +77,23 @@ public class ZombieAI : MonoBehaviour
                     if (p.name == attackBoolParam) hasAttackBool = true;
                 }
             }
+            
+            // แสดง Warning ถ้าไม่เจอ Parameter
             if (!hasWalkBool && !string.IsNullOrEmpty(walkBoolParam))
                 Debug.LogWarning($"[ZombieAI] Animator missing Bool '{walkBoolParam}'.", this);
             if (!hasRunBool && !string.IsNullOrEmpty(runBoolParam))
                 Debug.LogWarning($"[ZombieAI] Animator missing Bool '{runBoolParam}'.", this);
             if (!hasAttackBool && !string.IsNullOrEmpty(attackBoolParam))
-                Debug.LogWarning($"[ZombieAI] Animator missing Bool '{attackBoolParam}'. If your parameter is named differently (e.g. 'isAttackin'), change it in the ZombieAI inspector.", this);
+                Debug.LogWarning($"[ZombieAI] Animator missing Bool '{attackBoolParam}'.", this);
         }
 
-        // Subscribe to own death
+        // Subscribe to own death event (เมื่อตาย จะเรียก OnSelfDied)
         if (selfHealth != null)
         {
             selfHealth.Died += OnSelfDied;
         }
 
-        // หา Player อัตโนมัติ โดยใช้ Tag
+        // หาผู้เล่นอัตโนมัติจาก Tag "Player"
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
         {
@@ -89,30 +102,36 @@ public class ZombieAI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Update ทุกเฟรม - คำนวณระยะ, เลือกสถานะ (เดิน/วิ่ง/โจมตี), และอัพเดท Animation
+    /// </summary>
     void Update()
     {
-    if (isDead || target == null || agent == null || anim == null) return;
+        // ถ้าตายแล้ว หรือไม่มี target/agent/anim ไม่ต้องทำอะไร
+        if (isDead || target == null || agent == null || anim == null) return;
 
+        // คำนวณระยะห่างระหว่างซอมบี้กับผู้เล่น
         float distance = Vector3.Distance(transform.position, target.position);
 
+        // === อยู่ในระยะตรวจจับ -> ไล่ตามผู้เล่น ===
         if (distance <= detectionRange)
         {
-            agent.SetDestination(target.position);
-            agent.isStopped = false;
+            agent.SetDestination(target.position);  // ตั้งจุดหมายปลายทางเป็นตำแหน่งผู้เล่น
+            agent.isStopped = false;                // เปิดการเคลื่อนที่
 
-            // เลือกเดิน/วิ่งตามระยะที่กำหนด (ภายใน detectionRange)
-            bool shouldAttack = distance <= attackRange;
-            bool shouldRun = !shouldAttack && distance <= Mathf.Max(runStartDistance, attackRange);
-            bool shouldWalk = !shouldAttack && !shouldRun; // ไกลกว่า runStartDistance แต่ยังอยู่ใน detectionRange ให้เดิน
+            // กำหนดสถานะตามระยะห่าง
+            bool shouldAttack = distance <= attackRange;  // ใกล้มากพอ -> โจมตี
+            bool shouldRun = !shouldAttack && distance <= Mathf.Max(runStartDistance, attackRange);  // ใกล้ปานกลาง -> วิ่ง
+            bool shouldWalk = !shouldAttack && !shouldRun;  // ไกล -> เดิน
 
-            // ตั้งค่า speed ของ Agent
+            // ตั้งค่าความเร็วของ NavMeshAgent
             agent.speed = shouldRun ? runSpeed : walkSpeed;
 
-            // อัปเดตค่า Bool ใน Animator ให้ตรงกับสถานะปัจจุบัน
+            // อัพเดท Animator Parameters
             if (hasWalkBool) anim.SetBool(walkBoolParam, shouldWalk && !isAttackingNow);
             if (hasRunBool) anim.SetBool(runBoolParam, shouldRun && !isAttackingNow);
 
-            // โจมตีเมื่อเข้าใกล้
+            // โจมตีเมื่อเข้าใกล้และถึงเวลาโจมตีครั้งต่อไป
             if (shouldAttack && !isAttackingNow && Time.time - lastAttackTime >= attackCooldown)
             {
                 StartCoroutine(AttackRoutine());
@@ -120,48 +139,59 @@ public class ZombieAI : MonoBehaviour
         }
         else
         {
-            // นอกระยะตรวจจับ -> Idle
+            // === นอกระยะตรวจจับ -> Idle (หยุดเคลื่อนที่) ===
             if (hasWalkBool) anim.SetBool(walkBoolParam, false);
             if (hasRunBool) anim.SetBool(runBoolParam, false);
-            agent.ResetPath();
+            agent.ResetPath();  // ยกเลิกเส้นทางการเดิน
         }
     }
 
+    /// <summary>
+    /// Coroutine สำหรับการโจมตี - หยุดเคลื่อนที่, เล่น Animation, สร้างความเสียหาย, แล้วกลับมาเคลื่อนที่ต่อ
+    /// </summary>
     private IEnumerator AttackRoutine()
     {
-        if (isDead) yield break;
+        if (isDead) yield break;  // ถ้าตายแล้ว ไม่ต้องโจมตี
+        
+        // เริ่มโจมตี
         isAttackingNow = true;
         lastAttackTime = Time.time;
-        agent.isStopped = true; // หยุดชั่วคราวเพื่อเล่นแอนิเมชันโจมตี
+        agent.isStopped = true;  // หยุดการเคลื่อนที่ชั่วคราว
 
-        // ปิดการเดิน/วิ่ง
+        // ปิด Animation เดิน/วิ่ง
         if (hasWalkBool) anim.SetBool(walkBoolParam, false);
         if (hasRunBool) anim.SetBool(runBoolParam, false);
 
-        // เปิดสถานะโจมตี (ใช้ Bool ตามที่กำหนด)
+        // เปิด Animation โจมตี
         if (hasAttackBool) anim.SetBool(attackBoolParam, true);
 
-        // จังหวะโดนจริง
+        // รอจนถึงจังหวะที่มือโดนในแอนิเมชัน (เช่น 0.3 วินาที)
         yield return new WaitForSeconds(attackHitDelay);
+        
+        // สร้างความเสียหายให้เป้าหมาย
         if (!isDead && targetHealth != null && !targetHealth.IsDead)
         {
             targetHealth.TakeDamage(Mathf.Max(1, attackDamage));
         }
 
-        // รอจนแอนิเมชันโจมตีจบลงก่อนปล่อยเดิน/วิ่งต่อ
+        // รอให้แอนิเมชันโจมตีเล่นจบ
         yield return new WaitForSeconds(Mathf.Max(0f, attackAnimDuration - attackHitDelay));
 
+        // ปิด Animation โจมตี และกลับมาเคลื่อนที่ต่อ
         if (hasAttackBool) anim.SetBool(attackBoolParam, false);
         if (!isDead) agent.isStopped = false;
         isAttackingNow = false;
     }
 
+    /// <summary>
+    /// เรียกเมื่อซอมบี้ตาย - หยุด AI, เพิ่มคะแนน, เล่น Animation ตาย, และลบออกจากเกม
+    /// </summary>
     private void OnSelfDied()
     {
-        if (isDead) return;
+        if (isDead) return;  // ป้องกันเรียกซ้ำ
         isDead = true;
         
-        // เพิ่มคะแนนเมื่อซอมบี้ตาย
+        // เพิ่มคะแนนให้ผู้เล่นผ่าน ScoreManager
         if (ScoreManager.Instance != null)
         {
             ScoreManager.Instance.AddZombieKillScore();
@@ -171,32 +201,46 @@ public class ZombieAI : MonoBehaviour
             Debug.LogWarning("[ZombieAI] ScoreManager not found! No points awarded.", this);
         }
         
-        // Stop AI movement and attacks
-        if (agent != null) { agent.isStopped = true; agent.ResetPath(); }
+        // หยุดการเคลื่อนที่และโจมตี
+        if (agent != null) 
+        { 
+            agent.isStopped = true; 
+            agent.ResetPath(); 
+        }
         isAttackingNow = false;
-        // Disable all colliders to avoid further hits
-        foreach (var col in GetComponentsInChildren<Collider>()) col.enabled = false;
-        // Play death animation
+        
+        // ปิด Colliders ทั้งหมด (เพื่อไม่ให้โดนอีก)
+        foreach (var col in GetComponentsInChildren<Collider>()) 
+            col.enabled = false;
+        
+        // เล่น Animation ตาย
         if (anim != null)
         {
-            // Turn off locomotion bools
+            // ปิด Animation การเคลื่อนที่และโจมตี
             if (hasWalkBool) anim.SetBool(walkBoolParam, false);
             if (hasRunBool) anim.SetBool(runBoolParam, false);
             if (hasAttackBool) anim.SetBool(attackBoolParam, false);
-            if (!string.IsNullOrEmpty(deathBoolParam)) anim.SetBool(deathBoolParam, true);
+            
+            // เปิด Animation ตาย
+            if (!string.IsNullOrEmpty(deathBoolParam)) 
+                anim.SetBool(deathBoolParam, true);
         }
-        // Destroy after delay (use provided delay; user can match it to clip length)
+        
+        // ลบ GameObject หลังจากผ่านเวลาที่กำหนด (ให้เวลาเล่น Animation ตาย)
         float delay = Mathf.Max(0f, deathCleanupDelay);
         if (delay <= 0.01f)
         {
-            // Fallback conservative delay
-            delay = 2.5f;
+            delay = 2.5f;  // ค่า Default ถ้าไม่ได้กำหนด
         }
         Destroy(gameObject, delay);
     }
 
+    /// <summary>
+    /// เรียกเมื่อ GameObject ถูกทำลาย - ยกเลิก Event Subscription
+    /// </summary>
     private void OnDestroy()
     {
-        if (selfHealth != null) selfHealth.Died -= OnSelfDied;
+        if (selfHealth != null) 
+            selfHealth.Died -= OnSelfDied;  // ยกเลิก Subscribe Event
     }
 }
