@@ -56,6 +56,12 @@ public class GoalWin : MonoBehaviour
                 return;
             }
 
+            // บันทึกคะแนนก่อนเปลี่ยน Scene (เก็บไว้ใน CurrentScore เพื่อแสดงใน Win Scene)
+            if (ScoreManager.Instance != null)
+            {
+                Debug.Log($"[GoalWin] Player won with score: {ScoreManager.Instance.CurrentScore}");
+            }
+            
             Debug.Log($"[GoalWin] WIN! Loading scene: {winSceneName}");
             SceneManager.LoadScene(winSceneName, LoadSceneMode.Single);
         }

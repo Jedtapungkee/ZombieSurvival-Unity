@@ -227,6 +227,13 @@ public class GameOverUI : MonoBehaviour
 
     public void RestartScene()
     {
+        // รีเซ็ตคะแนนก่อน Restart
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.ResetScore();
+            Debug.Log("[GameOverUI] Score reset before restart");
+        }
+        
         Time.timeScale = 1f;
         var scene = SceneManager.GetActiveScene();
         SceneManager.LoadScene(scene.buildIndex);

@@ -7,6 +7,13 @@ public class MenuUI : MonoBehaviour
 
     public void OnStartClicked()
     {
+        // รีเซ็ตคะแนนก่อนเริ่มเกมใหม่
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.ResetScore();
+            Debug.Log("[MenuUI] Score reset before starting new game");
+        }
+        
         // โหลดซีนเล่นจริง
         SceneManager.LoadScene(gameScene, LoadSceneMode.Single);
     }

@@ -2279,7 +2279,7 @@ MonoBehaviour:
   gameOverPanel: {fileID: 2088462810}
   messageText: {fileID: 94381589}
   finalScoreTextLegacy: {fileID: 403427848}
-  scorePrefix: 'Final Score: '
+  scorePrefix: 'Your Score: '
   gameplayScoreUI: {fileID: 1066552919}
   pauseTimeOnGameOver: 1
   fadeIn: 1

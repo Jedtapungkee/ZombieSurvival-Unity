@@ -146,6 +146,13 @@ public class WinMenu : MonoBehaviour
 
     public void OnBackToMenu()
     {
+        // รีเซ็ตคะแนนก่อนกลับเมนู
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.ResetScore();
+            Debug.Log("[WinMenu] Score reset before returning to menu");
+        }
+        
         Debug.Log($"[WinMenu] Back clicked -> Load {mainMenuScene}");
         SceneManager.LoadScene(mainMenuScene, LoadSceneMode.Single);
     }
